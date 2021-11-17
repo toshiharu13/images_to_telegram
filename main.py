@@ -12,10 +12,15 @@ def image_downloader(source, destination):
 
 if __name__ == "__main__":
     filename = './images/hubble.jpeg'
-    url = 'https://upload.wikimedia.org/wikipedia/commons/3/3f/HST-SM4.jpeg'
+    url_wiki_img = 'https://upload.wikimedia.org/wikipedia/commons/3/3f/HST-SM4.jpeg'
     Path('./images').mkdir(parents=True, exist_ok=True)
+    url_spacex = 'https://api.spacexdata.com/v4/launches/latest'
 
-    image_downloader(url, filename)
+    image_downloader(url_wiki_img, filename)
+
+    response = requests.get(url_spacex)
+    response.raise_for_status()
+    print(response.json()['links']['patch'])
 
 
 
