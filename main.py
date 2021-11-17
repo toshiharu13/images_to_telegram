@@ -22,12 +22,33 @@ def fetch_spacex_last_launch(link_to_download):
     logging.info(roster_of_links)
     for link_image in roster_of_links:
         cleared_link = roster_of_links[link_image]
-        parsed_link = urlparse(cleared_link)
-        image_name_from_link = parsed_link.path
-        filename_to_write = f'./images{image_name_from_link}'
-        image_downloader(cleared_link, filename_to_write)
+        filename_to_write = split_file_name(cleared_link)
+        image_downloader(cleared_link, f'./images/{filename_to_write}')
         logging.info(filename_to_write)
 
+
+def split_file_name(url):
+    parse_url = urlparse(url)
+    path_to_file = parse_url.path
+    name_of_file = os.path.split(path_to_file)[1]
+    return name_of_file
+
+
+def nasa_images_get(link_to_download, key):
+    params = {'api_key': key,
+              'count': 30,
+              }
+    response = requests.get(link_to_download, params=params)
+    response.raise_for_status()
+    print(response.json())
+    roster_of_space_data = response.json()
+    for dirty_link_to_image in roster_of_space_data:
+        image_url = dirty_link_to_image['url']
+        #print(image_url)
+        filename_to_write = split_file_name(image_url)
+        print(filename_to_write)
+        image_downloader(image_url, f'./images/{filename_to_write}')
+        logging.info(filename_to_write)
 
 
 if __name__ == "__main__":
@@ -42,21 +63,8 @@ if __name__ == "__main__":
     url_spacex = 'https://api.spacexdata.com/v4/launches/latest'
     url_nasa = 'https://api.nasa.gov/planetary/apod'
     key_nasa = os.getenv('NASA_KEY')
-    params = {'api_key': key_nasa}
-    nasa_response = requests.get(url_nasa, params=params)
-    nasa_response.raise_for_status()
-    # print(nasa_response.json())
-    nasa_image_url = nasa_response.json()['hdurl']
-    print(nasa_image_url)
-    nasa_parse_url = urlparse(nasa_image_url)
-    path_to_file = nasa_parse_url.path
-    print(path_to_file)
-    print(os.path.split(path_to_file))
-    name_of_file = os.path.split(path_to_file)[1]
-    print(name_of_file)
-    print(os.path.splitext(name_of_file)[1])
 
-
+    nasa_images_get(url_nasa, key_nasa)
     #fetch_spacex_last_launch(url_spacex)
 
 
