@@ -62,12 +62,24 @@ if __name__ == "__main__":
     Path('./images').mkdir(parents=True, exist_ok=True)
     url_spacex = 'https://api.spacexdata.com/v4/launches/latest'
     url_nasa = 'https://api.nasa.gov/planetary/apod'
+    url_earth_nasa = 'https://api.nasa.gov/EPIC/api/natural'
+    not_full_link_to_image_earth = 'https://api.nasa.gov/EPIC/archive/natural'
     key_nasa = os.getenv('NASA_KEY')
 
-    nasa_images_get(url_nasa, key_nasa)
+    #nasa_images_get(url_nasa, key_nasa)
     #fetch_spacex_last_launch(url_spacex)
-
-
+    #https://api.nasa.gov/EPIC/archive/natural/2021/11/15/png/epic_1b_20211115005515.png?api_key=swRtV29CSKmndoLmKmrjUkULgGS3imz0w4L5uwi2
+    params = {'api_key': key_nasa}
+    response = requests.get(url_earth_nasa, params=params)
+    response.raise_for_status()
+    background_information = response.json()
+    #print(background_information)
+    for dirty_data in background_information:
+        #print(dirty_data)
+        name_of_image = dirty_data['image']
+        date_of_creation = dirty_data['date']
+        print(name_of_image, date_of_creation)
+        print(type(date_of_creation))
 
 
 
