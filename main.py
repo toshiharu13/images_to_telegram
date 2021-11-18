@@ -92,8 +92,8 @@ if __name__ == "__main__":
     #nasa_earth_images_get(url_earth_nasa, key_nasa, not_full_link_to_image_earth)
 
 bot = telegram.Bot(token=os.getenv('TELEGRAMM_BOT_KEY'))
-bot.send_message(text='Hi! samurai!', chat_id=os.getenv('MY_TEST_GROUP_ID'))
-
+#bot.send_message(text='Hi! samurai!', chat_id=os.getenv('MY_TEST_GROUP_ID'))
+bot.send_photo(chat_id=os.getenv('MY_TEST_GROUP_ID'), photo=open('images/epic_1b_20211115095527.png', 'rb'))
 
 
 
