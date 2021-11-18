@@ -17,4 +17,20 @@
 
         $ https://github.com/toshiharu13/images_to_telegram.git
 
+ - Установить requirements.txt
 
+
+        $ pip install -r requirements.txt
+
+- Создать файл .env и заполнить в нем переменные:
+
+   - NASA_KEY=<ваш токен, полученый на сайте NASA>
+   - TELEGRAMM_BOT_KEY=<токен вашего телеграм бота>
+   - MY_TEST_GROUP_ID=<ID телеграм группы>
+   - TIME_TO_SLEEP=<время задержки между публикациями фотографий>
+
+Бот должен быть администратором telegram группы
+
+## Запуск
+
+      $ python3 main.py
