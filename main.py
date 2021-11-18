@@ -1,3 +1,4 @@
+import datetime
 import logging
 import requests
 import os
@@ -5,6 +6,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
+import telegram
 
 
 def image_downloader(source, destination):
@@ -51,6 +53,25 @@ def nasa_images_get(link_to_download, key):
         logging.info(filename_to_write)
 
 
+def nasa_earth_images_get(url_earth_nasa, key, not_full_link_to_image_earth):
+    params = {'api_key': key}
+    response = requests.get(url_earth_nasa, params=params)
+    response.raise_for_status()
+    background_information = response.json()
+    for dirty_data in background_information:
+        name_of_image = dirty_data['image']
+        date_of_creation = dirty_data['date']
+        parsed_data = datetime.datetime.strptime(
+            date_of_creation, '%Y-%m-%d %H:%M:%S'
+        )
+        full_link_to_image_earth = f'{not_full_link_to_image_earth}/{parsed_data.year}/{parsed_data.month}/{parsed_data.day}/png/{name_of_image}.png?api_key={key_nasa}'
+        filename_to_write = split_file_name(full_link_to_image_earth)
+        image_downloader(
+            full_link_to_image_earth, f'./images/{filename_to_write}'
+        )
+        logging.info(filename_to_write)
+
+
 if __name__ == "__main__":
     load_dotenv()
     logging.basicConfig(
@@ -68,18 +89,10 @@ if __name__ == "__main__":
 
     #nasa_images_get(url_nasa, key_nasa)
     #fetch_spacex_last_launch(url_spacex)
-    #https://api.nasa.gov/EPIC/archive/natural/2021/11/15/png/epic_1b_20211115005515.png?api_key=swRtV29CSKmndoLmKmrjUkULgGS3imz0w4L5uwi2
-    params = {'api_key': key_nasa}
-    response = requests.get(url_earth_nasa, params=params)
-    response.raise_for_status()
-    background_information = response.json()
-    #print(background_information)
-    for dirty_data in background_information:
-        #print(dirty_data)
-        name_of_image = dirty_data['image']
-        date_of_creation = dirty_data['date']
-        print(name_of_image, date_of_creation)
-        print(type(date_of_creation))
+    #nasa_earth_images_get(url_earth_nasa, key_nasa, not_full_link_to_image_earth)
+
+bot = telegram.Bot(token=os.getenv('TELEGRAMM_BOT_KEY'))
+bot.send_message(text='Hi! samurai!', chat_id=os.getenv('MY_TEST_GROUP_ID'))
 
 
 
