@@ -1,8 +1,11 @@
 import datetime
 import logging
+import random
 import requests
 import os
 from pathlib import Path
+import shutil
+import time
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
@@ -42,13 +45,10 @@ def nasa_images_get(link_to_download, key):
               }
     response = requests.get(link_to_download, params=params)
     response.raise_for_status()
-    print(response.json())
     roster_of_space_data = response.json()
     for dirty_link_to_image in roster_of_space_data:
         image_url = dirty_link_to_image['url']
-        #print(image_url)
         filename_to_write = split_file_name(image_url)
-        print(filename_to_write)
         image_downloader(image_url, f'./images/{filename_to_write}')
         logging.info(filename_to_write)
 
@@ -72,6 +72,18 @@ def nasa_earth_images_get(url_earth_nasa, key, not_full_link_to_image_earth):
         logging.info(filename_to_write)
 
 
+def clear_image_folder(folder):
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+
 if __name__ == "__main__":
     load_dotenv()
     logging.basicConfig(
@@ -87,13 +99,26 @@ if __name__ == "__main__":
     not_full_link_to_image_earth = 'https://api.nasa.gov/EPIC/archive/natural'
     key_nasa = os.getenv('NASA_KEY')
 
-    #nasa_images_get(url_nasa, key_nasa)
-    #fetch_spacex_last_launch(url_spacex)
-    #nasa_earth_images_get(url_earth_nasa, key_nasa, not_full_link_to_image_earth)
+    while True:
+        clear_image_folder('./images')
+        nasa_images_get(url_nasa, key_nasa)
+        fetch_spacex_last_launch(url_spacex)
+        nasa_earth_images_get(
+            url_earth_nasa, key_nasa, not_full_link_to_image_earth
+        )
 
-bot = telegram.Bot(token=os.getenv('TELEGRAMM_BOT_KEY'))
-#bot.send_message(text='Hi! samurai!', chat_id=os.getenv('MY_TEST_GROUP_ID'))
-bot.send_photo(chat_id=os.getenv('MY_TEST_GROUP_ID'), photo=open('images/epic_1b_20211115095527.png', 'rb'))
+        bot = telegram.Bot(token=os.getenv('TELEGRAMM_BOT_KEY'))
+        images_roster = os.listdir('./images')
+        for image in range(len(images_roster)):
+            image_in_focus = random.choice(images_roster)
+            bot.send_photo(
+                chat_id=os.getenv('MY_TEST_GROUP_ID'),
+                photo=open(f'images/{image_in_focus}', 'rb')
+            )
+            images_roster.remove(image_in_focus)
+            time.sleep(int(os.getenv('TIME_TO_SLEEP')))
+        clear_image_folder('./images')
+
 
 
 
