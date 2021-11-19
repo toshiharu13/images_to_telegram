@@ -1,15 +1,15 @@
 import datetime
 import logging
-import random
-import requests
 import os
-from pathlib import Path
+import random
 import shutil
 import time
+from pathlib import Path
 from urllib.parse import urlparse
 
-from dotenv import load_dotenv
+import requests
 import telegram
+from dotenv import load_dotenv
 
 #  Кортеж с ожидаемыми расширениями изображений
 #  используется в check_for_ext
