@@ -11,11 +11,18 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 import telegram
 
-
+#  Кортеж с ожидаемыми расширениями изображений
+#  используется в check_for_ext
 img_ext = ('.jpg', '.gif', '.png', '.jpeg')
 
 
 def image_downloader(source, destination):
+    """
+    Функция скачивания изображения в локальную папку
+    :param source: ссылка на скачивание
+    :param destination: локальная папка
+    :return: None
+    """
     response = requests.get(source)
     response.raise_for_status()
 
@@ -24,6 +31,11 @@ def image_downloader(source, destination):
 
 
 def fetch_spacex_last_launch(link_to_download):
+    """
+    Функция скачивания изображений с сайта SpaceX
+    :param link_to_download: ссылка на источник
+    :return: None
+    """
     response = requests.get(link_to_download)
     response.raise_for_status()
     roster_of_links = response.json()['links']['patch']
@@ -36,6 +48,11 @@ def fetch_spacex_last_launch(link_to_download):
 
 
 def split_file_name(url):
+    """
+    Функция парсинга имени файла из ссылки
+    :param url: ссылка на скачивание
+    :return: имя файла
+    """
     parse_url = urlparse(url)
     path_to_file = parse_url.path
     name_of_file = os.path.split(path_to_file)[1]
@@ -43,6 +60,12 @@ def split_file_name(url):
 
 
 def nasa_images_get(link_to_download, key):
+    """
+    Функция скачивания изображений(кроме земли) с сайта NASA
+    :param link_to_download: ссылка на источник
+    :param key: ключ к NASA
+    :return: None
+    """
     params = {'api_key': key,
               'count': 30,
               }
@@ -60,6 +83,15 @@ def nasa_images_get(link_to_download, key):
 
 
 def nasa_earth_images_get(url_earth_nasa, key, not_full_link_to_image_earth):
+    """
+    Функция скачивания фотографий земли с сайта NASA.
+    После передачи ссылки и ключа, функция собирает ссылку из ответа json,
+    и по этой ссылке скачивает изображения
+    :param url_earth_nasa: ссылка для первоначального запроса
+    :param key:  ключ к сайту NASA
+    :param not_full_link_to_image_earth: часть будущей ссылки на скачивание
+    :return: None
+    """
     params = {'api_key': key}
     response = requests.get(url_earth_nasa, params=params)
     response.raise_for_status()
@@ -70,7 +102,10 @@ def nasa_earth_images_get(url_earth_nasa, key, not_full_link_to_image_earth):
         parsed_data = datetime.datetime.strptime(
             date_of_creation, '%Y-%m-%d %H:%M:%S'
         )
-        full_link_to_image_earth = f'{not_full_link_to_image_earth}/{parsed_data.year}/{parsed_data.month}/{parsed_data.day}/png/{name_of_image}.png?api_key={key_nasa}'
+        full_link_to_image_earth = (f'{not_full_link_to_image_earth}'
+                                    f'/{parsed_data.year}/{parsed_data.month}'
+                                    f'/{parsed_data.day}/png'
+                                    f'/{name_of_image}.png?api_key={key_nasa}')
         filename_to_write = split_file_name(full_link_to_image_earth)
         image_downloader(
             full_link_to_image_earth, f'./images/{filename_to_write}'
@@ -79,6 +114,11 @@ def nasa_earth_images_get(url_earth_nasa, key, not_full_link_to_image_earth):
 
 
 def clear_image_folder(folder):
+    """
+    Функия очистки папки с изображениями
+    :param folder: папка которую надо чистить(для гибгости)
+    :return: None
+    """
     for filename in os.listdir(folder):
         file_path = os.path.join(folder, filename)
         try:
