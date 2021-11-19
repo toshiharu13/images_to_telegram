@@ -171,7 +171,7 @@ if __name__ == "__main__":
         for image_count in range(len(images_roster)):
             image_in_focus = random.choice(images_roster)
             bot.send_photo(
-                chat_id=os.getenv('MY_TEST_GROUP_ID'),
+                chat_id=os.getenv('TELEGRAM_GROUP_ID'),
                 photo=open(f'images/{image_in_focus}', 'rb')
             )
             print(image_in_focus)
