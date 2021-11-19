@@ -12,6 +12,9 @@ from dotenv import load_dotenv
 import telegram
 
 
+img_ext = ('.jpg', '.gif', '.png', '.jpeg')
+
+
 def image_downloader(source, destination):
     response = requests.get(source)
     response.raise_for_status()
@@ -49,6 +52,9 @@ def nasa_images_get(link_to_download, key):
     for dirty_link_to_image in roster_of_space_data:
         image_url = dirty_link_to_image['url']
         filename_to_write = split_file_name(image_url)
+        if not check_for_ext(filename_to_write):
+            logging.info(f'{image_url} not image! canceling')
+            continue
         image_downloader(image_url, f'./images/{filename_to_write}')
         logging.info(filename_to_write)
 
@@ -84,6 +90,19 @@ def clear_image_folder(folder):
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 
+def check_for_ext(file):
+    """
+    Функция проверки расширения у полученого файла
+    :param file: проверяемый файл
+    :return: True/False
+    """
+    splitted_ext = os.path.splitext(file)[1]
+    if splitted_ext:
+        if splitted_ext in img_ext:
+            return True
+    return False
+
+
 if __name__ == "__main__":
     load_dotenv()
     logging.basicConfig(
@@ -109,16 +128,12 @@ if __name__ == "__main__":
 
         bot = telegram.Bot(token=os.getenv('TELEGRAMM_BOT_KEY'))
         images_roster = os.listdir('./images')
-        for image in range(len(images_roster)):
+        for image_count in range(len(images_roster)):
             image_in_focus = random.choice(images_roster)
             bot.send_photo(
                 chat_id=os.getenv('MY_TEST_GROUP_ID'),
                 photo=open(f'images/{image_in_focus}', 'rb')
             )
+            print(image_in_focus)
             images_roster.remove(image_in_focus)
             time.sleep(int(os.getenv('TIME_TO_SLEEP', default=86400)))
-        clear_image_folder('./images')
-
-
-
-
