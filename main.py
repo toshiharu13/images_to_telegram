@@ -116,7 +116,7 @@ if __name__ == "__main__":
                 photo=open(f'images/{image_in_focus}', 'rb')
             )
             images_roster.remove(image_in_focus)
-            time.sleep(int(os.getenv('TIME_TO_SLEEP')))
+            time.sleep(int(os.getenv('TIME_TO_SLEEP', default=86400)))
         clear_image_folder('./images')
 
 
