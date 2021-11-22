@@ -60,7 +60,7 @@ def split_file_name(url):
     return file_name
 
 
-def nasa_images_get(link_to_download, key):
+def get_nasa_images(link_to_download, key):
     """
     Функция скачивания изображений(кроме земли) с сайта NASA
     :param link_to_download: ссылка на источник
@@ -109,7 +109,7 @@ def nasa_earth_images_get(url_earth_nasa, key, not_full_link_to_image_earth):
                                     f'/{parsed_image_creation.year}'
                                     f'/{parsed_image_creation.month}'
                                     f'/{parsed_image_creation.day}/png'
-                                    f'/{image_name}.png?api_key={key_nasa}')
+                                    f'/{image_name}.png?api_key={nasa_key}')
         image_filename = split_file_name(full_link_to_image_earth)
         image_downloader(
             full_link_to_image_earth, f'./images/{image_filename}'
@@ -123,8 +123,8 @@ def clear_image_folder(folder):
     :param folder: папка которую надо чистить(для гибгости)
     :return: None
     """
-    for filename in os.listdir(folder):
-        file_path = os.path.join(folder, filename)
+    for file_name in os.listdir(folder):
+        file_path = os.path.join(folder, file_name)
         try:
             if os.path.isfile(file_path) or os.path.islink(file_path):
                 os.unlink(file_path)
@@ -156,17 +156,17 @@ if __name__ == "__main__":
         filemode='w',
     )
     Path('./images').mkdir(parents=True, exist_ok=True)
-    url_spacex = 'https://api.spacexdata.com/v4/launches/latest'
-    url_nasa = 'https://api.nasa.gov/planetary/apod'
-    url_earth_nasa = 'https://api.nasa.gov/EPIC/api/natural'
+    spacex_url = 'https://api.spacexdata.com/v4/launches/latest'
+    nasa_url = 'https://api.nasa.gov/planetary/apod'
+    nasa_earth_url = 'https://api.nasa.gov/EPIC/api/natural'
     image_link_to_build = 'https://api.nasa.gov/EPIC/archive/natural'
-    key_nasa = os.getenv('NASA_KEY')
+    nasa_key = os.getenv('NASA_KEY')
 
     while True:
         clear_image_folder('./images')
-        nasa_images_get(url_nasa, key_nasa)
-        fetch_spacex_last_launch(url_spacex)
-        nasa_earth_images_get(url_earth_nasa, key_nasa, image_link_to_build)
+        get_nasa_images(nasa_url, nasa_key)
+        fetch_spacex_last_launch(spacex_url)
+        nasa_earth_images_get(nasa_earth_url, nasa_key, image_link_to_build)
 
         bot = telegram.Bot(token=os.getenv('TELEGRAMM_BOT_KEY'))
         images = os.listdir('./images')
