@@ -44,7 +44,8 @@ def fetch_spacex_last_launch(link_to_download):
     for image_data in links:
         image_url = links[image_data]
         image_filename = split_file_name(image_url)
-        download_images(image_url, f'./images/{image_filename}')
+        copy_destination = Path.cwd()/'images'/image_filename
+        download_images(image_url, copy_destination)
         logging.info(image_filename)
 
 
@@ -78,7 +79,8 @@ def get_nasa_images(link_to_download, key):
         if not check_for_ext(image_filename):
             logging.info(f'{image_url} not image! canceling')
             continue
-        download_images(image_url, f'./images/{image_filename}')
+        copy_destination = Path.cwd() / 'images' / image_filename
+        download_images(image_url, copy_destination)
         logging.info(image_filename)
 
 
@@ -109,9 +111,8 @@ def get_nasa_earth_images(url_earth_nasa, key, not_full_link_to_image_earth):
                                     f'/{parsed_image_creation.day}/png'
                                     f'/{image_name}.png?api_key={nasa_key}')
         image_filename = split_file_name(full_link_to_image_earth)
-        download_images(
-            full_link_to_image_earth, f'./images/{image_filename}'
-        )
+        copy_destination = Path.cwd() / 'images' / image_filename
+        download_images(full_link_to_image_earth, copy_destination)
         logging.info(image_filename)
 
 
@@ -152,17 +153,18 @@ if __name__ == "__main__":
     nasa_key = os.getenv('NASA_KEY')
 
     while True:
-        clear_image_folder('./images')
-        Path('./images').mkdir(parents=True, exist_ok=True)
+        image_folder = Path.cwd()/'images'
+        clear_image_folder(image_folder)
+        Path(image_folder).mkdir(parents=True, exist_ok=True)
         get_nasa_images(nasa_url, nasa_key)
         fetch_spacex_last_launch(spacex_url)
         get_nasa_earth_images(nasa_earth_url, nasa_key, image_link_to_build)
 
         bot = telegram.Bot(token=os.getenv('TELEGRAMM_BOT_KEY'))
-        images = os.listdir('./images')
+        images = os.listdir(image_folder)
         for image_count in images:
             image_filename = random.choice(images)
-            with open(f'images/{image_filename}', 'rb') as image_file:
+            with open(Path(image_folder/image_filename), 'rb') as image_file:
                 bot.send_photo(
                     chat_id=os.getenv('TELEGRAM_GROUP_ID'), photo=image_file
                 )
