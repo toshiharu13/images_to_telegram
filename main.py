@@ -67,9 +67,7 @@ def get_nasa_images(link_to_download, key):
     :param key: ключ к NASA
     :return: None
     """
-    params = {'api_key': key,
-              'count': 30,
-              }
+    params = {'api_key': key, 'count': 30}
     response = requests.get(link_to_download, params=params)
     response.raise_for_status()
     spacex_links = response.json()
@@ -123,15 +121,10 @@ def clear_image_folder(folder):
     :param folder: папка которую надо чистить(для гибгости)
     :return: None
     """
-    for file_name in os.listdir(folder):
-        file_path = os.path.join(folder, file_name)
-        try:
-            if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-        except Exception as e:
-            print('Failed to delete %s. Reason: %s' % (file_path, e))
+    try:
+        shutil.rmtree(folder)
+    except Exception as e:
+        print('Failed to delete %s. Reason: %s' % (folder, e))
 
 
 def check_for_ext(file):
@@ -141,10 +134,7 @@ def check_for_ext(file):
     :return: True/False
     """
     splitted_ext = os.path.splitext(file)[1]
-    if splitted_ext:
-        if splitted_ext in img_ext:
-            return True
-    return False
+    return splitted_ext in img_ext
 
 
 if __name__ == "__main__":
@@ -155,7 +145,6 @@ if __name__ == "__main__":
         filename='logs.lod',
         filemode='w',
     )
-    Path('./images').mkdir(parents=True, exist_ok=True)
     spacex_url = 'https://api.spacexdata.com/v4/launches/latest'
     nasa_url = 'https://api.nasa.gov/planetary/apod'
     nasa_earth_url = 'https://api.nasa.gov/EPIC/api/natural'
@@ -164,6 +153,7 @@ if __name__ == "__main__":
 
     while True:
         clear_image_folder('./images')
+        Path('./images').mkdir(parents=True, exist_ok=True)
         get_nasa_images(nasa_url, nasa_key)
         fetch_spacex_last_launch(spacex_url)
         get_nasa_earth_images(nasa_earth_url, nasa_key, image_link_to_build)
