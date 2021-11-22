@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
         bot = telegram.Bot(token=os.getenv('TELEGRAMM_BOT_KEY'))
         images = os.listdir('./images')
-        for image_count in range(len(images)):
+        for image_count in images:
             image_filename = random.choice(images)
             with open(f'images/{image_filename}', 'rb') as image_file:
                 bot.send_photo(
