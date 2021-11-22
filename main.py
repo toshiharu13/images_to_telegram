@@ -38,13 +38,14 @@ def fetch_spacex_last_launch(link_to_download):
     """
     response = requests.get(link_to_download)
     response.raise_for_status()
-    roster_of_links = response.json()['links']['patch']
-    logging.info(roster_of_links)
-    for link_image in roster_of_links:
-        cleared_link = roster_of_links[link_image]
-        filename_to_write = split_file_name(cleared_link)
-        image_downloader(cleared_link, f'./images/{filename_to_write}')
-        logging.info(filename_to_write)
+    logging.info(response.json())
+    links = response.json()['links']['patch']
+    logging.info(links)
+    for image_data in links:
+        image_url = links[image_data]
+        image_filename = split_file_name(image_url)
+        image_downloader(image_url, f'./images/{image_filename}')
+        logging.info(image_filename)
 
 
 def split_file_name(url):
@@ -55,8 +56,8 @@ def split_file_name(url):
     """
     parse_url = urlparse(url)
     path_to_file = parse_url.path
-    name_of_file = os.path.split(path_to_file)[1]
-    return name_of_file
+    file_name = os.path.split(path_to_file)[1]
+    return file_name
 
 
 def nasa_images_get(link_to_download, key):
@@ -71,15 +72,16 @@ def nasa_images_get(link_to_download, key):
               }
     response = requests.get(link_to_download, params=params)
     response.raise_for_status()
-    roster_of_space_data = response.json()
-    for dirty_link_to_image in roster_of_space_data:
-        image_url = dirty_link_to_image['url']
-        filename_to_write = split_file_name(image_url)
-        if not check_for_ext(filename_to_write):
+    spacex_links = response.json()
+    logging.info(spacex_links)
+    for spacex_link in spacex_links:
+        image_url = spacex_link['url']
+        image_filename = split_file_name(image_url)
+        if not check_for_ext(image_filename):
             logging.info(f'{image_url} not image! canceling')
             continue
-        image_downloader(image_url, f'./images/{filename_to_write}')
-        logging.info(filename_to_write)
+        image_downloader(image_url, f'./images/{image_filename}')
+        logging.info(image_filename)
 
 
 def nasa_earth_images_get(url_earth_nasa, key, not_full_link_to_image_earth):
@@ -95,22 +97,24 @@ def nasa_earth_images_get(url_earth_nasa, key, not_full_link_to_image_earth):
     params = {'api_key': key}
     response = requests.get(url_earth_nasa, params=params)
     response.raise_for_status()
-    background_information = response.json()
-    for dirty_data in background_information:
-        name_of_image = dirty_data['image']
-        date_of_creation = dirty_data['date']
-        parsed_data = datetime.datetime.strptime(
-            date_of_creation, '%Y-%m-%d %H:%M:%S'
+    links_information = response.json()
+    logging.info(links_information)
+    for link_information in links_information:
+        image_name = link_information['image']
+        image_creation = link_information['date']
+        parsed_image_creation = datetime.datetime.strptime(
+            image_creation, '%Y-%m-%d %H:%M:%S'
         )
         full_link_to_image_earth = (f'{not_full_link_to_image_earth}'
-                                    f'/{parsed_data.year}/{parsed_data.month}'
-                                    f'/{parsed_data.day}/png'
-                                    f'/{name_of_image}.png?api_key={key_nasa}')
-        filename_to_write = split_file_name(full_link_to_image_earth)
+                                    f'/{parsed_image_creation.year}'
+                                    f'/{parsed_image_creation.month}'
+                                    f'/{parsed_image_creation.day}/png'
+                                    f'/{image_name}.png?api_key={key_nasa}')
+        image_filename = split_file_name(full_link_to_image_earth)
         image_downloader(
-            full_link_to_image_earth, f'./images/{filename_to_write}'
+            full_link_to_image_earth, f'./images/{image_filename}'
         )
-        logging.info(filename_to_write)
+        logging.info(image_filename)
 
 
 def clear_image_folder(folder):
@@ -155,25 +159,23 @@ if __name__ == "__main__":
     url_spacex = 'https://api.spacexdata.com/v4/launches/latest'
     url_nasa = 'https://api.nasa.gov/planetary/apod'
     url_earth_nasa = 'https://api.nasa.gov/EPIC/api/natural'
-    not_full_link_to_image_earth = 'https://api.nasa.gov/EPIC/archive/natural'
+    image_link_to_build = 'https://api.nasa.gov/EPIC/archive/natural'
     key_nasa = os.getenv('NASA_KEY')
 
     while True:
         clear_image_folder('./images')
         nasa_images_get(url_nasa, key_nasa)
         fetch_spacex_last_launch(url_spacex)
-        nasa_earth_images_get(
-            url_earth_nasa, key_nasa, not_full_link_to_image_earth
-        )
+        nasa_earth_images_get(url_earth_nasa, key_nasa, image_link_to_build)
 
         bot = telegram.Bot(token=os.getenv('TELEGRAMM_BOT_KEY'))
-        images_roster = os.listdir('./images')
-        for image_count in range(len(images_roster)):
-            image_in_focus = random.choice(images_roster)
+        images = os.listdir('./images')
+        for image_count in range(len(images)):
+            image_filename = random.choice(images)
             bot.send_photo(
                 chat_id=os.getenv('TELEGRAM_GROUP_ID'),
-                photo=open(f'images/{image_in_focus}', 'rb')
+                photo=open(f'images/{image_filename}', 'rb')
             )
-            print(image_in_focus)
-            images_roster.remove(image_in_focus)
+            logging.info(f' send {image_filename} to telegram')
+            images.remove(image_filename)
             time.sleep(int(os.getenv('TIME_TO_SLEEP', default=86400)))
