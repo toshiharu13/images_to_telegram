@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 #  Кортеж с ожидаемыми расширениями изображений
 #  используется в check_for_ext
-img_ext = ('.jpg', '.gif', '.png', '.jpeg')
+IMG_EXT = ('.jpg', '.gif', '.png', '.jpeg')
 
 
 def download_images(source, destination):
@@ -134,7 +134,7 @@ def check_for_ext(file):
     :return: True/False
     """
     splitted_ext = os.path.splitext(file)[1]
-    return splitted_ext in img_ext
+    return splitted_ext in IMG_EXT
 
 
 if __name__ == "__main__":
