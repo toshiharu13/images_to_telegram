@@ -42,8 +42,8 @@ def fetch_spacex_last_launch(link_to_download):
     logging.info(spacex_api_data)
     links = spacex_api_data['links']['patch']
     logging.info(links)
-    for image_data in links:
-        image_url = links[image_data]
+    for image_name in links:
+        image_url = links[image_name]
         image_filename = split_file_name(image_url)
         copy_destination = Path.cwd()/'images'/image_filename
         download_image(image_url, copy_destination)
