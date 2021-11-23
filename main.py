@@ -42,11 +42,11 @@ def fetch_spacex_last_launch(link_to_download):
     logging.info(spacex_api_data)
     links = spacex_api_data['links']['patch']
     logging.info(links)
-    for image_name in links:
-        image_url = links[image_name]
+    for link in links:
+        image_url = links[link]
         image_filename = split_file_name(image_url)
-        copy_destination = Path.cwd()/'images'/image_filename
-        download_image(image_url, copy_destination)
+        image_filepath = Path.cwd()/'images'/image_filename
+        download_image(image_url, image_filepath)
         logging.info(image_filename)
 
 
@@ -85,28 +85,28 @@ def get_nasa_images(link_to_download, key):
         logging.info(image_filename)
 
 
-def get_nasa_earth_images(url_earth_nasa, key, not_full_link_to_image_earth):
+def get_nasa_earth_images(url_earth_nasa, key, nasa_image_url_template):
     """
     Функция скачивания фотографий земли с сайта NASA.
     После передачи ссылки и ключа, функция собирает ссылку из ответа json,
     и по этой ссылке скачивает изображения
     :param url_earth_nasa: ссылка для первоначального запроса
     :param key:  ключ к сайту NASA
-    :param not_full_link_to_image_earth: часть будущей ссылки на скачивание
+    :param nasa_image_url_template: часть будущей ссылки на скачивание
     :return: None
     """
     params = {'api_key': key}
     response = requests.get(url_earth_nasa, params=params)
     response.raise_for_status()
-    links_information = response.json()
-    logging.info(links_information)
-    for link_information in links_information:
-        image_name = link_information['image']
-        image_creation = link_information['date']
+    image_links = response.json()
+    logging.info(image_links)
+    for image_link in image_links:
+        image_name = image_link['image']
+        image_creation = image_link['date']
         parsed_image_creation = datetime.datetime.strptime(
             image_creation, '%Y-%m-%d %H:%M:%S'
         )
-        full_link_to_image_earth = (f'{not_full_link_to_image_earth}'
+        full_link_to_image_earth = (f'{nasa_image_url_template}'
                                     f'/{parsed_image_creation.year}'
                                     f'/{parsed_image_creation.month}'
                                     f'/{parsed_image_creation.day}/png'
@@ -162,13 +162,13 @@ if __name__ == "__main__":
         get_nasa_earth_images(nasa_earth_url, nasa_key, image_link_to_build)
 
         bot = telegram.Bot(token=os.getenv('TELEGRAMM_BOT_KEY'))
-        images = os.listdir(image_folder)
-        for image_count in images:
-            image_filename = random.choice(images)
+        file_names = os.listdir(image_folder)
+        for image_count in file_names:
+            image_filename = random.choice(file_names)
             with open(Path(image_folder/image_filename), 'rb') as image_file:
                 bot.send_photo(
                     chat_id=os.getenv('TELEGRAM_GROUP_ID'), photo=image_file
                 )
             logging.info(f' send {image_filename} to telegram')
-            images.remove(image_filename)
+            file_names.remove(image_filename)
             time.sleep(int(os.getenv('TIME_TO_SLEEP', default=86400)))
