@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 IMG_EXT = ('.jpg', '.gif', '.png', '.jpeg')
 
 
-def download_images(source, destination):
+def download_image(source, destination):
     """
     Функция скачивания изображения в локальную папку
     :param source: ссылка на скачивание
@@ -38,14 +38,15 @@ def fetch_spacex_last_launch(link_to_download):
     """
     response = requests.get(link_to_download)
     response.raise_for_status()
-    logging.info(response.json())
-    links = response.json()['links']['patch']
+    spacex_api_data = response.json()
+    logging.info(spacex_api_data)
+    links = spacex_api_data['links']['patch']
     logging.info(links)
     for image_data in links:
         image_url = links[image_data]
         image_filename = split_file_name(image_url)
         copy_destination = Path.cwd()/'images'/image_filename
-        download_images(image_url, copy_destination)
+        download_image(image_url, copy_destination)
         logging.info(image_filename)
 
 
@@ -77,10 +78,10 @@ def get_nasa_images(link_to_download, key):
         image_url = spacex_link['url']
         image_filename = split_file_name(image_url)
         if not check_for_ext(image_filename):
-            logging.info(f'{image_url} not image! canceling')
+            logging.info(f'{image_filename} not image! canceling')
             continue
         copy_destination = Path.cwd() / 'images' / image_filename
-        download_images(image_url, copy_destination)
+        download_image(image_url, copy_destination)
         logging.info(image_filename)
 
 
@@ -112,7 +113,7 @@ def get_nasa_earth_images(url_earth_nasa, key, not_full_link_to_image_earth):
                                     f'/{image_name}.png?api_key={nasa_key}')
         image_filename = split_file_name(full_link_to_image_earth)
         copy_destination = Path.cwd() / 'images' / image_filename
-        download_images(full_link_to_image_earth, copy_destination)
+        download_image(full_link_to_image_earth, copy_destination)
         logging.info(image_filename)
 
 
@@ -128,13 +129,13 @@ def clear_image_folder(folder):
         print('Failed to delete %s. Reason: %s' % (folder, e))
 
 
-def check_for_ext(file):
+def check_for_ext(filename):
     """
     Функция проверки расширения у полученого файла
-    :param file: проверяемый файл
+    :param filename: проверяемый файл
     :return: True/False
     """
-    splitted_ext = os.path.splitext(file)[1]
+    splitted_ext = os.path.splitext(filename)[1]
     return splitted_ext in IMG_EXT
 
 
