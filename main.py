@@ -40,13 +40,12 @@ def fetch_spacex_last_launch(link_to_download):
     response.raise_for_status()
     spacex_api_data = response.json()
     logging.info(spacex_api_data)
-    links = spacex_api_data['links']['patch']
+    links = spacex_api_data['links']['flickr']['original']
     logging.info(links)
     for link in links:
-        image_url = links[link]
-        image_filename = split_file_name(image_url)
+        image_filename = split_file_name(link)
         image_filepath = Path.cwd()/'images'/image_filename
-        download_image(image_url, image_filepath)
+        download_image(link, image_filepath)
         logging.info(image_filename)
 
 
