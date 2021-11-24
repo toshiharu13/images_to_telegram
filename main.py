@@ -36,12 +36,21 @@ def fetch_spacex_last_launch(link_to_download):
     :param link_to_download: ссылка на источник
     :return: None
     """
+
     response = requests.get(link_to_download)
     response.raise_for_status()
     spacex_api_data = response.json()
     logging.info(spacex_api_data)
     links = spacex_api_data['links']['flickr']['original']
-    logging.info(links)
+    if not links:
+        logging.info(f'no images in {link_to_download}, try another source')
+        link_to_download = 'https://api.spacexdata.com/v3/launches/64'
+        response = requests.get(link_to_download)
+        response.raise_for_status()
+        spacex_api_data = response.json()
+        logging.info(spacex_api_data)
+        links = spacex_api_data['links']['flickr_images']
+        logging.info(links)
     for link in links:
         image_filename = split_file_name(link)
         image_filepath = Path.cwd()/'images'/image_filename
